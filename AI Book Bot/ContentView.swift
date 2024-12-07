@@ -10,34 +10,13 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    let service = BookService()
+    
     @State private var ISBNentry: String = ""
     @State private var bookData: String = ""
     @State var isLoading: Bool = false
-    
-    
-    enum GHError: Error {
-        case invalidURL
-    }
-    
-    func dataChange(data: Data?, response: URLResponse?, error: Error?) {
-        bookData = "You searched for: \(ISBNentry)"
-        sleep(2)
-        isLoading = false
-    }
-    
-    func getBookInfo() {
-        guard let url = URL(string: "https://www.googleapis.com/books/v1/volumes?q=isbn:\(ISBNentry)") else {
-            print("API ERROR - Invalid URL")
-            return
-        }
-        isLoading = true
-        let task = URLSession.shared.dataTask(
-            with: url,
-            completionHandler: dataChange
-        )
-        task.resume()
-        
-    }
+
     
     var body: some View {
         VStack {
@@ -46,7 +25,11 @@ struct ContentView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.leading)
                 
-                Button(action: { getBookInfo() }) {
+                Button(action: {
+                    service.fetchLines(onLinesReturned: {lines in
+                        print(lines)
+                    })
+                }) {
                     Text("Enter")
                         .padding()
                         .background(isLoading ? Color.gray : Color.green)
