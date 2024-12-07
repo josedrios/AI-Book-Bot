@@ -5,11 +5,15 @@
 //  Created by Jose Rios on 12/4/24.
 //
 
+// Test ISBN = 076790818X
+
 import SwiftUI
 
 struct ContentView: View {
     @State private var ISBNentry: String = ""
     @State private var bookData: String = ""
+    @State var isLoading: Bool = false
+    
     
     enum GHError: Error {
         case invalidURL
@@ -17,6 +21,8 @@ struct ContentView: View {
     
     func dataChange(data: Data?, response: URLResponse?, error: Error?) {
         bookData = "You searched for: \(ISBNentry)"
+        sleep(2)
+        isLoading = false
     }
     
     func getBookInfo() {
@@ -24,6 +30,7 @@ struct ContentView: View {
             print("API ERROR - Invalid URL")
             return
         }
+        isLoading = true
         let task = URLSession.shared.dataTask(
             with: url,
             completionHandler: dataChange
@@ -39,25 +46,32 @@ struct ContentView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.leading)
                 
-                Button(action: {
-                    getBookInfo()
-                }){
+                Button(action: { getBookInfo() }) {
                     Text("Enter")
                         .padding()
-                        .background(Color.green)
+                        .background(isLoading ? Color.gray : Color.green)
                         .foregroundColor(.white)
                         .cornerRadius(5)
                 }
+                .disabled(isLoading)
                 .padding(.trailing)
             }
             .padding(.top)
                         
-            Text(bookData)
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
-                .padding()
+            if(isLoading) {
+                ProgressView()
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .padding()
+            } else {
+                Text(bookData)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(10)
+                    .padding()
+            }
         }
     }
 }
