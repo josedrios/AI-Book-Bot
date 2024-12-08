@@ -11,18 +11,39 @@
 import SwiftUI
 
 struct ContentView: View {
+    let mainColor = Color(red: 37 / 255.0, green: 37 / 255.0, blue: 37 / 255.0)
     
     let service = BookService()
     
     @State var ISBNentry: String = "9780767908184"
     @State var book: BookElement? = nil
     @State var isLoading: Bool = false
+    @FocusState private var isFocused: Bool // Tracks focus state
     
     var body: some View {
         VStack {
+            VStack{
+                HStack(spacing: 2){
+                    Text("READ")
+                        .font(.system(.title, design: .monospaced))
+                        .foregroundColor(Color.white)
+                    Text("AI")
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(Color.white)
+                        .padding(.bottom, 10)
+                }
+            }
             HStack{
-                TextField("Enter ISBN,", text:$ISBNentry)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    TextField("Enter ISBN,", text: $ISBNentry)
+                    .padding(.horizontal, 10)
+                    .frame(height: 50)
+                    .background(Color.white)
+                    .cornerRadius(5)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(isFocused ? Color.red.opacity(0.4) : Color.white.opacity(0.5), lineWidth: 4)
+                    )
+                    .focused($isFocused)
                     .padding(.leading)
                 
                 Button(action: {
@@ -76,7 +97,8 @@ struct ContentView: View {
                 }
             }
         }
-        .background(Color.purple)
+        .background(mainColor)
+        //rgb(37,37,37)
     }
 }
 
