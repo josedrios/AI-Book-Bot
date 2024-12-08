@@ -6,6 +6,7 @@
 //
 
 // Test ISBN = 076790818X
+// Test ISBN = 9781590302484
 
 import SwiftUI
 
@@ -13,10 +14,10 @@ struct ContentView: View {
     
     let service = BookService()
     
-    @State private var ISBNentry: String = ""
-    @State private var bookData: String = ""
+    @State var ISBNentry: String = "9780767908184"
+    @State var bookData: String = ""
     @State var isLoading: Bool = false
-
+    // 9781590302484
     
     var body: some View {
         VStack {
@@ -26,8 +27,16 @@ struct ContentView: View {
                     .padding(.leading)
                 
                 Button(action: {
-                    service.fetchLines(onLinesReturned: {lines in
-                        print(lines)
+                    service.fetchLines(isbn: ISBNentry,onLinesReturned: {(book: BookElement) in
+                        print("Title: \(book.title)")
+                        print("Number of Pages: \(book.numPages)")
+                        if let authors = book.authors {
+                            for author in authors {
+                                print("Authors: \(author.name)")
+                            }
+                        } else {
+                            print("Authors: Unknown")
+                        }
                     })
                 }) {
                     Text("Enter")

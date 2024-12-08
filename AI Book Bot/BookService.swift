@@ -1,22 +1,32 @@
 import Foundation
 
 struct BookService {
-    func fetchLines(onLinesReturned callback: @escaping (String) -> Void) {
-        guard let url = URL(string: "https://openlibrary.org/api/books?bibkeys=ISBN%3A9781590302484&jscmd=details&format=json") else {
-            // Error handling
+    func fetchLines(isbn: String, onLinesReturned callback: @escaping (BookElement) -> Void) {
+        guard let url = URL(string: "https://openlibrary.org/api/books?bibkeys=ISBN:\(isbn)&jscmd=details&format=json") else {
+            print("Book API URL not working...")
             return
         }
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
-                // Error handling
+                print("No data received")
                 return
             }
-            guard let jsonString = String(data: data, encoding: .utf8) else {
-                // error handling
-                return
+            
+            do {
+                let decodedData = try JSONDecoder().decode([String: BookWrapper].self, from: data)
+                if let bookWrapper =  decodedData["ISBN:\(isbn)"] {
+                    callback(bookWrapper.details)
+                }else {
+                    print("No book details found")
+                }
+            }catch {
+                print("Error decoding json")
             }
-            callback(jsonString)
         }.resume()
     }
+}
+
+struct BookWrapper: Decodable {
+    let details: BookElement
 }
 

@@ -7,8 +7,18 @@
 
 import Foundation
 
-struct BookElement {
-    let ISBN: String
-    let Title: String
+struct BookElement: Decodable {
+    let title: String
     let numPages: Int
+    let authors: [Author]? 
+    
+    enum CodingKeys: String, CodingKey {
+        case title
+        case numPages = "number_of_pages"
+        case authors
+    }
+}
+
+struct Author: Decodable {
+    let name: String
 }
