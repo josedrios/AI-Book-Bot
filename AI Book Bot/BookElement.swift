@@ -9,7 +9,7 @@ import Foundation
 
 struct BookElement: Decodable {
     let title: String
-    let numPages: Int
+    let numPages: Int?
     let authors: [Author]? 
     
     enum CodingKeys: String, CodingKey {
