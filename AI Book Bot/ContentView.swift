@@ -18,12 +18,26 @@ struct ContentView: View {
     @State var ISBNentry: String = "9780767908184"
     @State var book: BookElement? = nil
     @State var isLoading: Bool = false
-    @FocusState private var isFocused: Bool // Tracks focus state
+    var isReplaced: Bool = false
     
     var body: some View {
-        VStack {
-            VStack{
-                HStack(spacing: 2){
+        VStack(spacing:0) {
+            // Navbar
+            ZStack{
+                HStack {
+                    Button(action: {
+                        print("Pressed navbar button")
+                    }) {
+                        Image(systemName: "line.3.horizontal")
+                            .resizable()
+                            .frame(width: 30, height: 18)
+                            .font(.title)
+                            .foregroundColor(Color.white)
+                    }
+                    .padding(.leading,20)
+                    Spacer()
+                }
+                HStack(alignment:.bottom, spacing: 2){
                     Text("READ")
                         .font(.system(.title, design: .monospaced))
                         .foregroundColor(Color.white)
@@ -33,17 +47,17 @@ struct ContentView: View {
                         .padding(.bottom, 10)
                 }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 5)
+            .padding(.bottom, 30)
+            
+            // Searchbar
             HStack{
                     TextField("Enter ISBN,", text: $ISBNentry)
                     .padding(.horizontal, 10)
                     .frame(height: 50)
-                    .background(Color.white)
+                    .background(Color.white.opacity(0.3))
                     .cornerRadius(5)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5)
-                            .stroke(isFocused ? Color.red.opacity(0.4) : Color.white.opacity(0.5), lineWidth: 4)
-                    )
-                    .focused($isFocused)
                     .padding(.leading)
                 
                 Button(action: {
@@ -64,7 +78,6 @@ struct ContentView: View {
                 .disabled(isLoading)
                 .padding(.trailing)
             }
-            .padding(.top)
                         
             if(isLoading) {
                 ProgressView()
