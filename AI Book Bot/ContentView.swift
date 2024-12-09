@@ -15,10 +15,9 @@ struct ContentView: View {
     
     let service = BookService()
     
-    @State var ISBNentry: String = "9780767908184"
+    @State var ISBNentry: String = ""
     @State var book: BookElement? = nil
     @State var isLoading: Bool = false
-    var isReplaced: Bool = false
     
     var body: some View {
         VStack(spacing:0) {
@@ -32,8 +31,9 @@ struct ContentView: View {
                             .resizable()
                             .frame(width: 30, height: 18)
                             .font(.title)
-                            .foregroundColor(Color.white)
                     }
+                    .buttonStyle(.plain)
+                    .foregroundColor(Color.white)
                     .padding(.leading,20)
                     Spacer()
                 }
@@ -49,16 +49,25 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 5)
-            .padding(.bottom, 30)
+            .padding(.bottom, 12)
             
             // Searchbar
             HStack{
-                    TextField("Enter ISBN,", text: $ISBNentry)
-                    .padding(.horizontal, 10)
-                    .frame(height: 50)
-                    .background(Color.white.opacity(0.3))
-                    .cornerRadius(5)
-                    .padding(.leading)
+                ZStack(alignment: .leading) {
+                    if ISBNentry.isEmpty {
+                        Text("Enter ISBN")
+                            .foregroundColor(Color.white.opacity(0.4))
+                            .font(.system(.title3, design: .monospaced))
+                    }
+                    TextField("", text: $ISBNentry)
+                        .foregroundColor(Color.white)
+                        .font(.system(.title3, design: .monospaced))
+                        .tint(Color.white)
+                        .frame(height: 50)
+                        .cornerRadius(5)
+                }
+                .padding(.leading,10)
+
                 
                 Button(action: {
                     isLoading = true
@@ -69,16 +78,22 @@ struct ContentView: View {
                     }
                 }
                 }){
-                    Text(isLoading ? "Loading..." : "Fetch Book")
-                    .padding()
-                    .background(isLoading ? Color.gray : Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
+                    Image(systemName: "magnifyingglass")
+                        .font(.title)
+                        .foregroundColor(isLoading ? Color.gray: Color.white.opacity(0.8))
+                        .padding(.leading, 0)
+                        .padding(.trailing, 10)
                 }
                 .disabled(isLoading)
-                .padding(.trailing)
             }
-                        
+            .background(Color.white.opacity(0.2))
+            .cornerRadius(5)
+            .padding()
+            .padding(.top, 0)
+            .padding(.bottom, 0)
+            
+            
+            // Body
             if(isLoading) {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -97,21 +112,20 @@ struct ContentView: View {
                         }
                         Spacer()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(width: .infinity, height: .infinity)
                     .background(Color.white)
                     .cornerRadius(5)
                     .padding()
                 } else {
                     Text("No book details available")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.white)
-                    .cornerRadius(5)
-                    .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.white)
+                        .cornerRadius(5)
+                        .padding()
                 }
             }
         }
         .background(mainColor)
-        //rgb(37,37,37)
     }
 }
 
