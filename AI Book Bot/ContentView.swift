@@ -29,7 +29,7 @@ struct ContentView: View {
                     }) {
                         Image(systemName: "line.3.horizontal")
                             .resizable()
-                            .frame(width: 30, height: 18)
+                            .frame(width: 25, height: 18)
                             .font(.title)
                     }
                     .buttonStyle(.plain)
@@ -73,7 +73,11 @@ struct ContentView: View {
                     isLoading = true
                     service.fetchLines(isbn: ISBNentry) { fetchedBook in
                     DispatchQueue.main.async {
-                        self.book = fetchedBook
+                        if let book = fetchedBook {
+                            self.book = book
+                        } else {
+                            self.book = nil // Clear book if no details found
+                        }
                         self.isLoading = false
                     }
                 }
