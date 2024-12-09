@@ -12,16 +12,18 @@ import SwiftUI
 
 struct ContentView: View {
     let mainColor = Color(red: 37 / 255.0, green: 37 / 255.0, blue: 37 / 255.0)
+    let categories = ["Result" , "Fiction", "Non-fiction", "Biography", "Science", "History", "Fantasy", "Mystery", "Romance", "Thriller", "Self-help"]
     
     let service = BookService()
     
     @State var ISBNentry: String = ""
     @State var book: BookElement? = nil
     @State var isLoading: Bool = false
+    @State var currentCat: String = "Result"
     
     var body: some View {
         VStack(spacing:0) {
-            // Navbar
+            // Headerbar
             ZStack{
                 HStack {
                     Button(action: {
@@ -48,8 +50,8 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.top, 5)
-            .padding(.bottom, 12)
+            .padding(.top, 7)
+            .padding(.bottom, 15)
             
             // Searchbar
             HStack{
@@ -57,7 +59,8 @@ struct ContentView: View {
                     if ISBNentry.isEmpty {
                         Text("Enter ISBN")
                             .foregroundColor(Color.white.opacity(0.4))
-                            .font(.system(.title3, design: .monospaced))
+                            .font(.system(.headline, design: .monospaced))
+                            .padding(.leading,(5))
                     }
                     TextField("", text: $ISBNentry)
                         .foregroundColor(Color.white)
@@ -65,6 +68,7 @@ struct ContentView: View {
                         .tint(Color.white)
                         .frame(height: 50)
                         .cornerRadius(5)
+                        .padding(.leading,(5))
                 }
                 .padding(.leading,10)
 
@@ -76,7 +80,7 @@ struct ContentView: View {
                         if let book = fetchedBook {
                             self.book = book
                         } else {
-                            self.book = nil // Clear book if no details found
+                            self.book = nil
                         }
                         self.isLoading = false
                     }
@@ -92,16 +96,41 @@ struct ContentView: View {
             }
             .background(Color.white.opacity(0.2))
             .cornerRadius(5)
-            .padding()
-            .padding(.top, 0)
-            .padding(.bottom, 0)
+            .padding(.horizontal)
+            .padding(.top, 5)
             
+            // Navbar
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 15) {
+                    ForEach(categories, id: \.self) {category in
+                        Button(action: {
+                            currentCat = category
+                            print("'\(category)' category was clicked")
+                        }){
+                            Text(category)
+                                .font(.system(.headline, design: .monospaced))
+                                .foregroundColor(currentCat == category ? Color.white : Color.white.opacity(0.5))
+                        }
+                        .frame(height: 50)
+                        .overlay(
+                            Rectangle()
+                                .fill(currentCat == category ? Color.white : Color.white.opacity(0.4))
+                                .frame(height: 3)
+                                .padding(.top, 50),
+                                alignment: Alignment.bottom
+                        )
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+            .padding(.top, 10)
+            .padding(.horizontal)
             
             // Body
             if(isLoading) {
                 ProgressView()
+                    .tint(Color.white)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.gray.opacity(0.2))
                     .cornerRadius(5)
                     .padding()
             } else {
@@ -122,8 +151,8 @@ struct ContentView: View {
                     .padding()
                 } else {
                     Text("No book details available")
+                        .foregroundStyle(Color.white)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.white)
                         .cornerRadius(5)
                         .padding()
                 }
