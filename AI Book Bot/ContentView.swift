@@ -17,10 +17,16 @@ struct ContentView: View {
     
     let service = BookService()
     
-    @State var ISBNentry: String = ""
+    @State var ISBNentry: String = "9781590302484"
     @State var book: BookElement? = nil
+    @State var title: String = ""
+    @State var isbn: String = ""
+    @State var pages: Int = 0
+    @State var authors: [String] = []
     @State var isLoading: Bool = false
     @State var currentCat: String = "SEARCH"
+    
+    
     
     var body: some View {
         VStack(spacing:0) {
@@ -76,13 +82,21 @@ struct ContentView: View {
                 
                 Button(action: {
                     isLoading = true
-                    currentCat = "Search"
+                    currentCat = "SEARCH"
                     service.fetchLines(isbn: ISBNentry) { fetchedBook in
                     DispatchQueue.main.async {
                         if let book = fetchedBook {
                             self.book = book
+                            title = book.title
+                            isbn = ISBNentry
+                            pages = book.numPages ?? 0
+                            authors = book.authors?.map { $0.name } ?? book.contributors?.map { $0.name } ?? [" {HUMAN } "]
                         } else {
                             self.book = nil
+                            title = "{ TITLE }"
+                            isbn = "{ ID }"
+                            pages = 00
+                            authors = ["{ HUMAN }"]
                         }
                         self.isLoading = false
                     }
@@ -110,8 +124,8 @@ struct ContentView: View {
                             print("'\(category)' category was clicked")
                         }){
                             Text(category)
-                                .font(.custom("SpaceMono-Regular", size:17))
-                                .foregroundColor(currentCat == category ? Color.white : Color.white.opacity(0.5))
+                                .font(.custom("SpaceMono-Regular", size:18))
+                                .foregroundColor(currentCat == category ? Color.white : Color.white.opacity(0.4))
                         }
                         .frame(height: 50)
                         .overlay(
@@ -122,65 +136,55 @@ struct ContentView: View {
                                 alignment: Alignment.bottom
                         )
                         .buttonStyle(PlainButtonStyle())
+                        .disabled(currentCat == category)
                     }
                 }
             }
             .padding(.horizontal)
-            
+            .padding(.bottom, 0)
+                        
             // Body
             ScrollView{
                 VStack(spacing: 0){
-                    Text("The Book of 5 Rings Artist Program")
-                        .foregroundColor(Color.white)
-                        .font(.custom("SpaceMono-Regular", size:27))
+                    // If empty add {Title}
+                    VStack(spacing: 0){
+                        Text("\(title == "" ? "{ TITLE }" : "\(title)")")
+                            .foregroundColor(Color.white)
+                            .font(.custom("SpaceMono-Regular", size:27))
+                            .padding(10)
+                        
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(height: 2)
+                            .frame(maxWidth: .infinity)
+
+                        VStack(spacing: 0){
+                            Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size:20))
+                                .padding(.top, 10)
+                                .padding(.bottom, 5)
+                            Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size:20))
+                                .padding(.bottom, 5)
+                            Text("ISBN: \(isbn == "" ? "{ ID }" : isbn)")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size:20))
+                                .padding(.bottom, 15)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 10)
                 }
-                .padding(.vertical, 20)
+                .padding(.top, 20)
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 5)
                 .cornerRadius(5)
-                .overlay(
-                    Rectangle()
-                        .fill(Color.white)
-                        .frame(height: 2)
-                        .padding(.top, 50),
-                        alignment: Alignment.bottom
-                )
                 
-                if(isLoading) {
-                    ProgressView()
-                        .tint(Color.white)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .cornerRadius(5)
-                        .padding()
-                } else {
-                    if let book = book {
-                        VStack{
-                            Text("Title: \(book.title)")
-                            if let numPages = book.numPages {
-                                Text("Number of Pages: \(numPages)")
-                            }
-                            if let authors = book.authors {
-                                Text("Authors: \(authors.map { $0.name }.joined(separator: ", "))")
-                            } else {
-                                if let contributors = book.contributors {
-                                    Text("Authors: \(contributors.map { $0.name }.joined(separator: ", "))")
-                                }
-                            }
-                            Spacer()
-                        }
-                        .background(Color.green)
-                        .foregroundStyle(Color.white)
-                        .padding()
-                    } else {
-                        Text("No book details available")
-                            .foregroundStyle(Color.white)
-                            .padding()
-                    }
-                }
             }
             .padding(.horizontal)
-            .padding(.vertical)
+            .padding(.vertical, 5)
         }
         .background(mainColor)
     }
