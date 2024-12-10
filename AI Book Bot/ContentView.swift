@@ -18,11 +18,12 @@ struct ContentView: View {
     let service = BookService()
     
     @State var ISBNentry: String = "9781590302484"
-    @State var book: BookElement? = nil
+    
     @State var title: String = ""
     @State var isbn: String = ""
     @State var pages: Int = 0
     @State var authors: [String] = []
+    
     @State var isLoading: Bool = false
     @State var currentCat: String = "SEARCH"
     
@@ -30,36 +31,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing:0) {
-            // Headerbar
-            ZStack{
-                HStack {
-                    Button(action: {
-                        print("Pressed navbar button")
-                    }) {
-                        Image(systemName: "line.3.horizontal")
-                            .resizable()
-                            .frame(width: 25, height: 18)
-                            .font(.title)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundColor(Color.white)
-                    .padding(.leading,20)
-                    .padding(.top, 3)
-                    Spacer()
-                }
-                HStack(alignment:.bottom, spacing: 2){
-                    Text("READ")
-                        .font(.custom("SpaceMono-Regular", size:30))
-                        .foregroundColor(Color.white)
-                    Text("AI")
-                        .font(.custom("SpaceMono-Regular", size:20))
-                        .foregroundColor(Color.white)
-                        .padding(.bottom, 18)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 3)
-            .padding(.bottom, 15)
+            Header()
             
             // Searchbar
             HStack{
@@ -86,13 +58,11 @@ struct ContentView: View {
                     service.fetchLines(isbn: ISBNentry) { fetchedBook in
                     DispatchQueue.main.async {
                         if let book = fetchedBook {
-                            self.book = book
                             title = book.title
                             isbn = ISBNentry
                             pages = book.numPages ?? 0
                             authors = book.authors?.map { $0.name } ?? book.contributors?.map { $0.name } ?? [" {HUMAN } "]
                         } else {
-                            self.book = nil
                             title = "{ TITLE }"
                             isbn = "{ ID }"
                             pages = 00
@@ -146,38 +116,38 @@ struct ContentView: View {
             // Body
             ScrollView{
                 VStack(spacing: 0){
-                    // If empty add {Title}
                     VStack(spacing: 0){
                         Text("\(title == "" ? "{ TITLE }" : "\(title)")")
                             .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size:27))
-                            .padding(10)
-                        
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(height: 2)
-                            .frame(maxWidth: .infinity)
+                            .font(.custom("SpaceMono-Regular", size:30))
+                            .padding(.horizontal, 10)
+                            .padding(.bottom, 20)
+                            .padding(.top, 0)
 
                         VStack(spacing: 0){
-                            Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                            Text("ISBN: \(isbn == "" ? "{ ID }" : isbn)")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size:20))
                                 .padding(.top, 10)
                                 .padding(.bottom, 5)
-                            Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                            Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size:20))
                                 .padding(.bottom, 5)
-                            Text("ISBN: \(isbn == "" ? "{ ID }" : isbn)")
+                            Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size:20))
                                 .padding(.bottom, 15)
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal)
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(5)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 10)
                 }
-                .padding(.top, 20)
+                .padding(.top, 15)
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
                 .cornerRadius(5)
@@ -187,6 +157,41 @@ struct ContentView: View {
             .padding(.vertical, 5)
         }
         .background(mainColor)
+    }
+}
+
+struct Header: View {
+    var body: some View {
+        // Headerbar
+        ZStack{
+            HStack {
+                Button(action: {
+                    print("Pressed navbar button")
+                }) {
+                    Image(systemName: "line.3.horizontal")
+                        .resizable()
+                        .frame(width: 25, height: 18)
+                        .font(.title)
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(Color.white)
+                .padding(.leading,20)
+                .padding(.top, 3)
+                Spacer()
+            }
+            HStack(alignment:.bottom, spacing: 2){
+                Text("READ")
+                    .font(.custom("SpaceMono-Regular", size:30))
+                    .foregroundColor(Color.white)
+                Text("AI")
+                    .font(.custom("SpaceMono-Regular", size:20))
+                    .foregroundColor(Color.white)
+                    .padding(.bottom, 18)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 3)
+        .padding(.bottom, 15)
     }
 }
 
