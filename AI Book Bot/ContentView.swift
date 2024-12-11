@@ -38,6 +38,8 @@ struct ContentView: View {
             Navbar(currentCat: $currentCat, categories: categories)
             
             BodySection(
+                currentCat: $currentCat,
+                categories: categories,
                 title: title,
                 isbn: isbn,
                 pages: pages,
@@ -179,54 +181,109 @@ struct Navbar: View {
 }
 
 struct BodySection: View {
+    @Binding var currentCat: String
+    let categories: [String]
     let title: String
     let isbn: String
     let pages: Int
     let authors: [String]
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    Text("\(title.isEmpty ? "{ TITLE }" : title)")
-                        .foregroundColor(Color.white)
-                        .font(.custom("SpaceMono-Regular", size: 30))
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 20)
-                        .padding(.top, 0)
-
-                    VStack(spacing: 0) {
-                        Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.top, 10)
-                            .padding(.bottom, 5)
-
-                        Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.bottom, 5)
-
-                        Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.bottom, 15)
+//            VStack(spacing: 0) {
+//                VStack(spacing: 0) {
+//                    Text("\(title.isEmpty ? "{ TITLE }" : title)")
+//                        .foregroundColor(Color.white)
+//                        .font(.custom("SpaceMono-Regular", size: 30))
+//                        .padding(.horizontal, 10)
+//                        .padding(.bottom, 20)
+//                        .padding(.top, 0)
+//
+//                    VStack(spacing: 0) {
+//                        Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
+//                            .foregroundColor(Color.white)
+//                            .font(.custom("SpaceMono-Regular", size: 20))
+//                            .padding(.top, 10)
+//                            .padding(.bottom, 5)
+//
+//                        Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+//                            .foregroundColor(Color.white)
+//                            .font(.custom("SpaceMono-Regular", size: 20))
+//                            .padding(.bottom, 5)
+//
+//                        Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+//                            .foregroundColor(Color.white)
+//                            .font(.custom("SpaceMono-Regular", size: 20))
+//                            .padding(.bottom, 15)
+//                    }
+//                    .frame(maxWidth: .infinity)
+//                    .padding(.horizontal)
+//                    .background(Color.white.opacity(0.2))
+//                    .cornerRadius(5)
+//                }
+//                .frame(maxWidth: .infinity)
+//                .padding(.bottom, 10)
+//            }
+//            .padding(.top, 15)
+//            .frame(maxWidth: .infinity)
+//            .multilineTextAlignment(.center)
+//            .cornerRadius(5)
+        TabView(selection: $currentCat){
+                ForEach(categories, id:\.self){ category in
+                    if category == "SEARCH" {
+                        ScrollView{
+                                        VStack(spacing: 0) {
+                                            VStack(spacing: 0) {
+                                                Text("\(title.isEmpty ? "{ TITLE }" : title)")
+                                                    .foregroundColor(Color.white)
+                                                    .font(.custom("SpaceMono-Regular", size: 30))
+                                                    .padding(.horizontal, 10)
+                                                    .padding(.bottom, 20)
+                                                    .padding(.top, 0)
+                            
+                                                VStack(spacing: 0) {
+                                                    Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
+                                                        .foregroundColor(Color.white)
+                                                        .font(.custom("SpaceMono-Regular", size: 20))
+                                                        .padding(.top, 10)
+                                                        .padding(.bottom, 5)
+                            
+                                                    Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                                                        .foregroundColor(Color.white)
+                                                        .font(.custom("SpaceMono-Regular", size: 20))
+                                                        .padding(.bottom, 5)
+                            
+                                                    Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                                                        .foregroundColor(Color.white)
+                                                        .font(.custom("SpaceMono-Regular", size: 20))
+                                                        .padding(.bottom, 15)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.horizontal)
+                                                .background(Color.white.opacity(0.2))
+                                                .cornerRadius(5)
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.bottom, 10)
+                                        }
+                                        .padding(.top, 15)
+                                        .frame(maxWidth: .infinity)
+                                        .multilineTextAlignment(.center)
+                                        .cornerRadius(5)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .tag(category)
+                    }else{
+                        ScrollView{
+                            Text(category)
+                                .foregroundColor(Color.white)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .tag(category)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                    .background(Color.white.opacity(0.2))
-                    .cornerRadius(5)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 10)
             }
-            .padding(.top, 15)
-            .frame(maxWidth: .infinity)
-            .multilineTextAlignment(.center)
-            .cornerRadius(5)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 5)
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
