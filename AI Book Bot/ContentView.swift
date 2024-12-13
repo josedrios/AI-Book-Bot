@@ -23,6 +23,9 @@ struct ContentView: View {
     @State var isbn: String = ""
     @State var pages: Int = 0
     @State var authors: [String] = []
+    @State var prompt: String = ""
+    
+    @State var summary: String = ""
     
     @State var isLoading: Bool = false
     @State var currentCat: String = "SEARCH"
@@ -43,7 +46,8 @@ struct ContentView: View {
                 title: title,
                 isbn: isbn,
                 pages: pages,
-                authors: authors
+                authors: authors,
+                summary: summary
             )
         }
         .background(mainColor)
@@ -57,11 +61,13 @@ struct ContentView: View {
                     isbn = ISBNentry
                     pages = book.numPages ?? 0
                     authors = book.authors?.map { $0.name } ?? book.contributors?.map { $0.name } ?? ["{ HUMAN }"]
+                    prompt = "Give me a concise summary of the book \(title)"
                 } else {
                     title = "{ TITLE }"
                     isbn = "{ ID }"
                     pages = 0
                     authors = ["{ HUMAN }"]
+                    summary = "{ AI LINGO }"
                 }
                 self.isLoading = false
             }
@@ -187,6 +193,7 @@ struct BodySection: View {
     let isbn: String
     let pages: Int
     let authors: [String]
+    let summary: String
 
     var body: some View {
         TabView(selection: $currentCat){
@@ -197,15 +204,14 @@ struct BodySection: View {
                             title: title,
                             isbn: isbn,
                             pages: pages,
-                            authors: authors
+                            authors: authors,
+                            summary: summary
                         )
                     }else{
-                        ScrollView{
-                            Text(category)
-                                .foregroundColor(Color.white)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .tag(category)
+                        CategoryTab(
+                            currentCat: $currentCat,
+                            category: category
+                        )
                     }
                 }
             }
@@ -220,6 +226,7 @@ struct SearchTab: View {
     let isbn: String
     let pages: Int
     let authors: [String]
+    let summary: String
 
     var body: some View {
         ScrollView{
@@ -247,7 +254,11 @@ struct SearchTab: View {
                                     Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
                                         .foregroundColor(Color.white)
                                         .font(.custom("SpaceMono-Regular", size: 20))
-                                        .padding(.bottom, 15)
+                                        .padding(.bottom, 5)
+                                    Text("Summary: \(summary == "" ? "{ AI LINGO }" : "\(summary)")")
+                                        .foregroundColor(Color.white)
+                                        .font(.custom("SpaceMono-Regular", size: 20))
+                                        .padding(.bottom, 5)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal)
@@ -261,6 +272,19 @@ struct SearchTab: View {
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                         .cornerRadius(5)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .tag(category)
+    }
+}
+
+struct CategoryTab: View {
+    @Binding var currentCat: String
+    let category: String
+    var body: some View {
+        ScrollView{
+            Text(category)
+                .foregroundColor(Color.white)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tag(category)
