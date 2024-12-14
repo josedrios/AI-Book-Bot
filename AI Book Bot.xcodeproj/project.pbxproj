@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BE0A34392D0D2225001A4E5A /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = BE0A34382D0D2225001A4E5A /* OpenAI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BEAC799A2D011DE00043363C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE0A34392D0D2225001A4E5A /* OpenAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = "AI Book Bot";
 			packageProductDependencies = (
+				BE0A34382D0D2225001A4E5A /* OpenAI */,
 			);
 			productName = "AI Book Bot";
 			productReference = BEAC79882D011DDC0043363C /* AI Book Bot.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = BEAC797F2D011DDC0043363C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BE0A34372D0D2225001A4E5A /* XCRemoteSwiftPackageReference "OpenAI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BEAC79892D011DDC0043363C /* Products */;
 			projectDirPath = "";
@@ -585,6 +594,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BE0A34372D0D2225001A4E5A /* XCRemoteSwiftPackageReference "OpenAI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MacPaw/OpenAI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BE0A34382D0D2225001A4E5A /* OpenAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BE0A34372D0D2225001A4E5A /* XCRemoteSwiftPackageReference "OpenAI" */;
+			productName = OpenAI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BEAC79802D011DDC0043363C /* Project object */;
 }
