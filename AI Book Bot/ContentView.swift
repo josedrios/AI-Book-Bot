@@ -13,7 +13,8 @@ import SwiftUI
 import OpenAI
 
 class ChatController: ObservableObject {
-    @Published var messages: [Message] = []
+    @Published var message: String = ""
+    @Published var botReply: String = ""
     let openAI: OpenAI
     
     init(apiToken: String){
@@ -21,29 +22,36 @@ class ChatController: ObservableObject {
     }
     
     func sendNewMessage(content: String){
-        let userMessage = Message(content: content, isUser: true)
-        self.messages.append(userMessage)
+        message = content
         getBotReply()
     }
     
     func getBotReply() {
+        guard let userMessage = ChatQuery.ChatCompletionMessageParam(role: .user, content: self.message) else {
+            print("Coudn't create the message from user")
+            return
+        }
+
         let query = ChatQuery(
-            messages: self.messages.map({.init(role: .user, content: $0.content)!
-            }),
+            messages: [userMessage],
             model: .gpt3_5Turbo
         )
+
         openAI.chats(query: query) { result in
             switch result {
             case .success(let success):
-                guard let choice =
-                    success.choices.first else {
-                        return
+                guard let choice = success.choices.first else { return }
+                if let content = choice.message.content {
+                    switch content {
+                    case .string(let reply):
+                        DispatchQueue.main.async {
+                            self.botReply = reply
+                        }
+                    default:
+                        print("Can't utilize content type")
                     }
-                guard let message =
-                    choice.message.content?.string
-                    else { return }
-                DispatchQueue.main.async {
-                    self.messages.append(Message(content: message, isUser: false))
+                } else {
+                    print("Nil content")
                 }
             case .failure(let failure):
                 print(failure)
@@ -52,15 +60,9 @@ class ChatController: ObservableObject {
     }
 }
 
-struct Message: Identifiable {
-    var id: UUID = .init()
-    var content: String
-    var isUser: Bool
-}
-
 struct ContentView: View {
     let mainColor = Color(red: 37 / 255.0, green: 37 / 255.0, blue: 37 / 255.0)
-    let categories = ["SEARCH", "FINDER", "FICTION", "NON-FICTION", "BIOGRAPHY", "SCIENCE", "HISTORY", "FANTASY", "MYSTERY", "ROMANCE", "THRILLER", "SELF-HELP"]
+    let categories = ["SEARCH", "FICTION", "NON-FICTION", "BIOGRAPHY", "SCIENCE", "HISTORY", "FANTASY", "MYSTERY", "ROMANCE", "THRILLER", "SELF-HELP"]
     
     let service = BookService()
     
@@ -111,11 +113,13 @@ struct ContentView: View {
             )
             VStack {
                 ScrollView {
-                    ForEach(chatController.messages) {
-                        message in
-                        MessageView(message: message)
-                            .padding(5)
-                    }
+                    Text(chatController.message)
+                        .padding(5)
+                        .background(Color.gray)
+                    Text(chatController.botReply)
+                        .background(Color.blue)
+                        .padding(5)
+
                 }
                 Divider()
                 HStack {
@@ -153,33 +157,6 @@ struct ContentView: View {
                     summary = "{ AI LINGO }"
                 }
                 self.isLoading = false
-            }
-        }
-    }
-}
-
-struct MessageView: View {
-    var message: Message
-    var body: some View {
-        Group {
-            if message.isUser {
-                HStack {
-                    Spacer()
-                    Text(message.content)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
-                        .clipShape(Capsule())
-                }
-            } else {
-                HStack {
-                    Text(message.content)
-                        .padding()
-                        .background(Color.black)
-                        .foregroundColor(Color.white)
-                        .clipShape(Capsule())
-                    Spacer()
-                }
             }
         }
     }
