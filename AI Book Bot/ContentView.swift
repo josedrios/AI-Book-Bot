@@ -320,32 +320,48 @@ struct SearchTab: View {
                         .foregroundColor(Color.white)
                         .font(.custom("SpaceMono-Regular", size: 30))
                         .padding(.horizontal, 10)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 10)
                         .padding(.top, 0)
-
+                        .multilineTextAlignment(.center)
+                    if !isbn.isEmpty {
+                        AsyncImage(url: URL(string: "https://covers.openlibrary.org/b/isbn/\(isbn)-M.jpg")) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            case .failure:
+                                Text("Image not available")
+                                    .foregroundColor(.gray)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .frame(height: 205)
+                        .padding(.vertical, 20)
+                    }
+                    
                     VStack(alignment: .leading, spacing: 0) {
                         Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
                             .foregroundColor(Color.white)
                             .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.top, 10)
-                            .padding(.bottom, 5)
+//                            .background(Color.white.opacity(0.2))
+//                            .cornerRadius(5)
                         Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
                             .foregroundColor(Color.white)
                             .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.bottom, 5)
                         Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
                             .foregroundColor(Color.white)
                             .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.bottom, 5)
                         Text("Summary: \(summary == "" ? "{ AI SUMMARY }" : "\(summary)")")
                             .foregroundColor(Color.white)
                             .font(.custom("SpaceMono-Regular", size: 20))
-                            .padding(.bottom, 5)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                    .background(Color.white.opacity(0.2))
-                    .cornerRadius(5)
+                    .padding(.horizontal, 20)
+                    .padding(.top)
                 }
                 .ignoresSafeArea(edges: .all)
                 .frame(maxWidth: .infinity)
