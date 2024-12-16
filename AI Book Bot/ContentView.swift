@@ -10,10 +10,57 @@
 // 9780062316110
 
 import SwiftUI
+import OpenAI
+
+class ChatController: ObservableObject {
+    @Published var messages: [Message] = []
+    let openAI: OpenAI
+    
+    init(apiToken: String){
+        self.openAI = OpenAI(apiToken: apiToken)
+    }
+    
+    func sendNewMessage(content: String){
+        let userMessage = Message(content: content, isUser: true)
+        self.messages.append(userMessage)
+        getBotReply()
+    }
+    
+    func getBotReply() {
+        let query = ChatQuery(
+            messages: self.messages.map({.init(role: .user, content: $0.content)!
+            }),
+            model: .gpt3_5Turbo
+        )
+        openAI.chats(query: query) { result in
+            switch result {
+            case .success(let success):
+                guard let choice =
+                    success.choices.first else {
+                        return
+                    }
+                guard let message =
+                    choice.message.content?.string
+                    else { return }
+                DispatchQueue.main.async {
+                    self.messages.append(Message(content: message, isUser: false))
+                }
+            case .failure(let failure):
+                print(failure)
+            }
+        }
+    }
+}
+
+struct Message: Identifiable {
+    var id: UUID = .init()
+    var content: String
+    var isUser: Bool
+}
 
 struct ContentView: View {
     let mainColor = Color(red: 37 / 255.0, green: 37 / 255.0, blue: 37 / 255.0)
-    let categories = ["SEARCH", "FICTION", "NON-FICTION", "BIOGRAPHY", "SCIENCE", "HISTORY", "FANTASY", "MYSTERY", "ROMANCE", "THRILLER", "SELF-HELP"]
+    let categories = ["SEARCH", "FINDER", "FICTION", "NON-FICTION", "BIOGRAPHY", "SCIENCE", "HISTORY", "FANTASY", "MYSTERY", "ROMANCE", "THRILLER", "SELF-HELP"]
     
     let service = BookService()
     
@@ -29,6 +76,19 @@ struct ContentView: View {
     
     @State var isLoading: Bool = false
     @State var currentCat: String = "SEARCH"
+    
+    @StateObject var chatController: ChatController
+    
+    init() {
+        guard let apiKey = Bundle.main.object(
+            forInfoDictionaryKey: "API_KEY"
+        ) as? String else {
+            fatalError("Could not find your API key in Info.plist")
+        }
+        _chatController = StateObject(wrappedValue: ChatController(apiToken: apiKey))
+    }
+    
+    @State var string: String = ""
     
     var body: some View {
         VStack(spacing:0) {
@@ -49,6 +109,29 @@ struct ContentView: View {
                 authors: authors,
                 summary: summary
             )
+            VStack {
+                ScrollView {
+                    ForEach(chatController.messages) {
+                        message in
+                        MessageView(message: message)
+                            .padding(5)
+                    }
+                }
+                Divider()
+                HStack {
+                    TextField("Message...", text: self.$string, axis: .vertical)
+                        .padding(5)
+                        .background(Color.gray.opacity(0.1))
+                    Button {
+                        self.chatController.sendNewMessage(content: string)
+                        string = ""
+                    } label: {
+                        Image(systemName: "paperplane")
+                    }
+                }
+                .padding()
+                .background(Color.white)
+            }
         }
         .background(mainColor)
     }
@@ -70,6 +153,33 @@ struct ContentView: View {
                     summary = "{ AI LINGO }"
                 }
                 self.isLoading = false
+            }
+        }
+    }
+}
+
+struct MessageView: View {
+    var message: Message
+    var body: some View {
+        Group {
+            if message.isUser {
+                HStack {
+                    Spacer()
+                    Text(message.content)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(Color.white)
+                        .clipShape(Capsule())
+                }
+            } else {
+                HStack {
+                    Text(message.content)
+                        .padding()
+                        .background(Color.black)
+                        .foregroundColor(Color.white)
+                        .clipShape(Capsule())
+                    Spacer()
+                }
             }
         }
     }

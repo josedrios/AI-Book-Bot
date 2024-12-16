@@ -394,6 +394,8 @@
 		};
 		BEAC79AE2D011DE00043363C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BEAC798A2D011DDC0043363C /* AI Book Bot */;
+			baseConfigurationReferenceRelativePath = key.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -432,6 +434,8 @@
 		};
 		BEAC79AF2D011DE00043363C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BEAC798A2D011DDC0043363C /* AI Book Bot */;
+			baseConfigurationReferenceRelativePath = key.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
