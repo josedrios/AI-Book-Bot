@@ -21,14 +21,19 @@ class ChatController: ObservableObject {
         self.openAI = OpenAI(apiToken: apiToken)
     }
     
-    func sendNewMessage(content: String){
+    func sendNewMessage(content: String, completion: @escaping (String?) -> Void) {
         message = content
-        getBotReply()
+        getBotReply { reply in
+            DispatchQueue.main.async {
+                self.botReply = reply ?? "No reply"
+                completion(reply)
+            }
+        }
     }
-    
-    func getBotReply() {
-        guard let userMessage = ChatQuery.ChatCompletionMessageParam(role: .user, content: self.message) else {
-            print("Coudn't create the message from user")
+
+    private func getBotReply(completion: @escaping (String?) -> Void) {
+        guard let userMessage = ChatQuery.ChatCompletionMessageParam(role: .user, content: message) else {
+            print("Failed to create user message")
             return
         }
 
@@ -40,21 +45,27 @@ class ChatController: ObservableObject {
         openAI.chats(query: query) { result in
             switch result {
             case .success(let success):
-                guard let choice = success.choices.first else { return }
-                if let content = choice.message.content {
-                    switch content {
-                    case .string(let reply):
-                        DispatchQueue.main.async {
-                            self.botReply = reply
-                        }
-                    default:
-                        print("Can't utilize content type")
-                    }
-                } else {
-                    print("Nil content")
-                }
+                guard let choice = success.choices.first else {
+                                completion(nil)
+                                return
+                            }
+                            if let content = choice.message.content {
+                                switch content {
+                                case .string(let reply):
+                                    completion(reply)
+                                default:
+                                    print("Unsupported content type")
+                                    completion(nil)
+                                }
+                            } else {
+                                print("Content is nil")
+                                completion(nil)
+                            }
             case .failure(let failure):
                 print(failure)
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }
     }
@@ -111,33 +122,9 @@ struct ContentView: View {
                 authors: authors,
                 summary: summary
             )
-            VStack {
-                ScrollView {
-                    Text(chatController.message)
-                        .padding(5)
-                        .background(Color.gray)
-                    Text(chatController.botReply)
-                        .background(Color.blue)
-                        .padding(5)
-
-                }
-                Divider()
-                HStack {
-                    TextField("Message...", text: self.$string, axis: .vertical)
-                        .padding(5)
-                        .background(Color.gray.opacity(0.1))
-                    Button {
-                        self.chatController.sendNewMessage(content: string)
-                        string = ""
-                    } label: {
-                        Image(systemName: "paperplane")
-                    }
-                }
-                .padding()
-                .background(Color.white)
-            }
         }
         .background(mainColor)
+        .ignoresSafeArea(edges: .bottom)
     }
     
     func fetchBook() {
@@ -145,10 +132,16 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 if let book = fetchedBook {
                     title = book.title
-                    isbn = ISBNentry
-                    pages = book.numPages ?? 0
-                    authors = book.authors?.map { $0.name } ?? book.contributors?.map { $0.name } ?? ["{ HUMAN }"]
-                    prompt = "Give me a concise summary of the book \(title)"
+                        isbn = ISBNentry
+                        pages = book.numPages ?? 0
+                        authors = book.authors?.map { $0.name } ?? book.contributors?.map { $0.name } ?? ["{ HUMAN }"]
+                        prompt = "Give me a concise summary of the book \(title)"
+                        
+                        chatController.sendNewMessage(content: prompt) { reply in
+                            DispatchQueue.main.async {
+                                summary = reply ?? "No summary available"
+                            }
+                        }
                 } else {
                     title = "{ TITLE }"
                     isbn = "{ ID }"
@@ -301,7 +294,11 @@ struct BodySection: View {
                         )
                     }
                 }
+                .padding(0)
             }
+            .ignoresSafeArea(edges: .bottom)
+            .padding()
+            .padding(.bottom, 0)
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -317,51 +314,53 @@ struct SearchTab: View {
 
     var body: some View {
         ScrollView{
-                        VStack(spacing: 0) {
-                            VStack(spacing: 0) {
-                                Text("\(title.isEmpty ? "{ TITLE }" : title)")
-                                    .foregroundColor(Color.white)
-                                    .font(.custom("SpaceMono-Regular", size: 30))
-                                    .padding(.horizontal, 10)
-                                    .padding(.bottom, 20)
-                                    .padding(.top, 0)
+            VStack(spacing: 0) {
+                VStack(alignment: .center, spacing: 0) {
+                    Text("\(title.isEmpty ? "{ TITLE }" : title)")
+                        .foregroundColor(Color.white)
+                        .font(.custom("SpaceMono-Regular", size: 30))
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 20)
+                        .padding(.top, 0)
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
+                            .foregroundColor(Color.white)
+                            .font(.custom("SpaceMono-Regular", size: 20))
+                            .padding(.top, 10)
+                            .padding(.bottom, 5)
+                        Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                            .foregroundColor(Color.white)
+                            .font(.custom("SpaceMono-Regular", size: 20))
+                            .padding(.bottom, 5)
+                        Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                            .foregroundColor(Color.white)
+                            .font(.custom("SpaceMono-Regular", size: 20))
+                            .padding(.bottom, 5)
+                        Text("Summary: \(summary == "" ? "{ AI SUMMARY }" : "\(summary)")")
+                            .foregroundColor(Color.white)
+                            .font(.custom("SpaceMono-Regular", size: 20))
+                            .padding(.bottom, 5)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(5)
+                }
+                .ignoresSafeArea(edges: .all)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 30)
+            }
+            .padding(.top, 15)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.leading)
+            .cornerRadius(5)
             
-                                VStack(spacing: 0) {
-                                    Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
-                                        .foregroundColor(Color.white)
-                                        .font(.custom("SpaceMono-Regular", size: 20))
-                                        .padding(.top, 10)
-                                        .padding(.bottom, 5)
-            
-                                    Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
-                                        .foregroundColor(Color.white)
-                                        .font(.custom("SpaceMono-Regular", size: 20))
-                                        .padding(.bottom, 5)
-            
-                                    Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
-                                        .foregroundColor(Color.white)
-                                        .font(.custom("SpaceMono-Regular", size: 20))
-                                        .padding(.bottom, 5)
-                                    Text("Summary: \(summary == "" ? "{ AI LINGO }" : "\(summary)")")
-                                        .foregroundColor(Color.white)
-                                        .font(.custom("SpaceMono-Regular", size: 20))
-                                        .padding(.bottom, 5)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(5)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.bottom, 10)
-                        }
-                        .padding(.top, 15)
-                        .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
-                        .cornerRadius(5)
         }
+        .ignoresSafeArea(edges: .bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tag(category)
+        .padding(0)
     }
 }
 
