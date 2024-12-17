@@ -8,6 +8,7 @@ struct BookInfo: View {
     let pagesArray: [Int]
     let authorsArray: [String]
     let summaryArray: [String]
+    var fetchBook: (Int) -> Void
     
     var body: some View {
         ScrollView{
@@ -15,6 +16,7 @@ struct BookInfo: View {
                 VStack{
                     Button(action: {
                         print("Generating new \(category) suggestion")
+                        fetchBook(currentIndex)
                     }){
                         Text("Generate Suggestion")
                             .font(.custom("SpaceMono-Regular", size: 20))

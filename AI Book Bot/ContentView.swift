@@ -24,6 +24,8 @@ struct ContentView: View {
     @State var summaryArray = Array(repeating: "", count: 11)
     
     @State var isLoading: Bool = false
+    @State var recommendedISBN: String = ""
+    @State var ISBNprompt: String = ""
     @State var currentCat: String = "SEARCH"
     @State var currentIndex: Int = 0
     
@@ -40,8 +42,8 @@ struct ContentView: View {
         VStack(spacing:0) {
             Header()
             
-            Search(ISBNentry: $ISBNentry, isLoading: $isLoading) {
-                fetchBook()
+            Search(ISBNentry: $ISBNentry, isLoading: $isLoading, currentCat: $currentCat) {_ in
+                fetchBook(for: 0)
             }
             
             Navbar(currentCat: $currentCat, currentIndex: $currentIndex, categories: categories)
@@ -55,36 +57,50 @@ struct ContentView: View {
                 pagesArray: pagesArray,
                 authorsArray: authorsArray,
                 summaryArray: summaryArray
-            )
+            ) {_ in 
+                fetchBook(for: currentIndex)
+            }
         }
         .background(mainColor)
         .ignoresSafeArea(edges: .bottom)
     }
     
-    func fetchBook() {
-        service.fetchLines(isbn: ISBNentry) { fetchedBook in
+    func fetchBook(for index: Int) {
+        if index == 0 {
+            ISBNprompt = ISBNentry
+        }else{
+            let suggestion = "Only give me an ISBN on the topic of \(categories[index]), nothing else, make sure its a well known book"
+            AIcontroller.sendNewMessage(content: suggestion) { reply in
+                DispatchQueue.main.async {
+                    recommendedISBN = reply ?? "0"
+                    print(recommendedISBN)
+                    ISBNprompt = recommendedISBN
+                }
+            }
+        }
+        service.fetchLines(isbn: ISBNprompt) { fetchedBook in
             DispatchQueue.main.async {
                 if let book = fetchedBook {
-                    titleArray[currentIndex] = book.title
-                        isbnArray[currentIndex] = ISBNentry
-                        pagesArray[currentIndex] = book.numPages ?? 0
-                        authorsArray[currentIndex] = book.authors?.first?.name
+                        titleArray[index] = book.title
+                        isbnArray[index] = ISBNentry
+                        pagesArray[index] = book.numPages ?? 0
+                        authorsArray[index] = book.authors?.first?.name
                             ?? book.contributors?.first?.name
                             ?? "{ HUMAN }"
-                        prompt = "Give me a concise summary of the book \(titleArray[0])"
+                        prompt = "Give me a concise summary of the book \(titleArray[index])"
                         
                         AIcontroller.sendNewMessage(content: prompt) { reply in
-                            summaryArray[currentIndex] = "..."
+                            summaryArray[index] = "..."
                             DispatchQueue.main.async {
-                                summaryArray[currentIndex] = reply ?? "No summary available"
+                                summaryArray[index] = reply ?? "No summary available"
                             }
                         }
                 } else {
-                    titleArray[currentIndex] = "{ ERROR - TRY ANOTHER IBSN }"
-                    isbnArray[currentIndex] = "{ - }"
-                    pagesArray[currentIndex] = 0
-                    authorsArray[currentIndex] = "{ - }"
-                    summaryArray[currentIndex] = "{ - }"
+                    titleArray[index] = "{ NO RESULT FOUND }"
+                    isbnArray[index] = "{ \(ISBNprompt) }"
+                    pagesArray[index] = 404
+                    authorsArray[index] = "{ TRY ANOTHER ISBN }"
+                    summaryArray[index] = "{ AI SAID SORRY... OR SOMETHING LIKE THAT... }"
                 }
                 self.isLoading = false
             }

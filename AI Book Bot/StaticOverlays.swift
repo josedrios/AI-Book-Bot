@@ -37,7 +37,8 @@ struct Header: View {
 struct Search: View {
     @Binding var ISBNentry: String
     @Binding var isLoading: Bool
-    var fetchBook: () -> Void
+    @Binding var currentCat: String
+    var fetchBook: (Int) -> Void
 
     var body: some View {
         HStack {
@@ -60,7 +61,8 @@ struct Search: View {
             
             Button(action: {
                 isLoading = true
-                fetchBook()
+                currentCat = "SEARCH"
+                fetchBook(0)
             }) {
                 Image(systemName: "magnifyingglass")
                     .font(.title)
@@ -112,9 +114,8 @@ struct Navbar: View {
             .padding(.horizontal)
             .padding(.bottom, 0)
             .onChange(of: currentCat) {
-                withAnimation {
-                    proxy.scrollTo(currentCat, anchor: .center)
-                }
+                updateIndex(category: currentCat)
+                proxy.scrollTo(currentCat, anchor: .center)
             }
         }
     }
