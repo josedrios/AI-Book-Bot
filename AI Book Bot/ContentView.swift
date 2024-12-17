@@ -138,6 +138,7 @@ struct ContentView: View {
                         prompt = "Give me a concise summary of the book \(title)"
                         
                         chatController.sendNewMessage(content: prompt) { reply in
+                            summary = "..."
                             DispatchQueue.main.async {
                                 summary = reply ?? "No summary available"
                             }
@@ -311,8 +312,25 @@ struct SearchTab: View {
     let pages: Int
     let authors: [String]
     let summary: String
-
+    let color1 = Color(red: 0.62, green: 0.78, blue: 0.53)
+    let color2 = Color(red: 0.61, green: 0.64, blue: 0.85)
+    let color3 = Color(red: 0.53, green: 0.31, blue: 0.33)
+    let color4 = Color(red: 0.19, green: 0.55, blue: 0.63)
+    let color5 = Color(red: 0.19, green: 0.55, blue: 0.63)
+    let color6 = Color(red: 0.84, green: 0.35, blue: 0.24)
+    
+    let colors: [Color] = [
+        Color(red: 0.62, green: 0.78, blue: 0.53),
+        Color(red: 0.61, green: 0.64, blue: 0.85),
+        Color(red: 0.53, green: 0.31, blue: 0.33),
+        Color(red: 0.19, green: 0.55, blue: 0.63),
+        Color(red: 0.19, green: 0.55, blue: 0.63),
+        Color(red: 0.84, green: 0.35, blue: 0.24)
+    ]
+    
     var body: some View {
+        let chosenColors = colors.shuffled()
+        
         ScrollView{
             VStack(spacing: 0) {
                 VStack(alignment: .center, spacing: 0) {
@@ -322,6 +340,10 @@ struct SearchTab: View {
                         .padding(.horizontal, 10)
                         .padding(.bottom, 10)
                         .padding(.top, 0)
+                        .multilineTextAlignment(.center)
+                    Text("By: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                        .foregroundColor(Color.gray)
+                        .font(.custom("SpaceMono-Regular", size: 18))
                         .multilineTextAlignment(.center)
                     if !isbn.isEmpty {
                         AsyncImage(url: URL(string: "https://covers.openlibrary.org/b/isbn/\(isbn)-M.jpg")) { phase in
@@ -343,29 +365,62 @@ struct SearchTab: View {
                         .padding(.vertical, 20)
                     }
                     
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("ISBN: \(isbn.isEmpty ? "{ ID }" : isbn)")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-//                            .background(Color.white.opacity(0.2))
-//                            .cornerRadius(5)
-                        Text("Authors: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-                        Text("Pages: \(pages == 0 ? "{ NUMBER }" : "\(pages)")")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
-                        Text("Summary: \(summary == "" ? "{ AI SUMMARY }" : "\(summary)")")
-                            .foregroundColor(Color.white)
-                            .font(.custom("SpaceMono-Regular", size: 20))
+                    VStack(alignment: .leading, spacing: 15) {
+                        HStack {
+                            Text("ISBN: ")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 20))
+                                .padding(.leading)
+                                .padding(.vertical, 10)
+                            Spacer()
+                            Text("\(isbn.isEmpty ? "{ ID }" : isbn)")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 20))
+                                .padding(.trailing)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                        
+                        HStack {
+                            Text("Pages: ")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 20))
+                                .padding(.leading)
+                                .padding(.vertical, 10)
+                            Spacer()
+                            Text("\(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 20))
+                                .padding(.trailing)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                        
+                        VStack {
+                            Text("AI Summary")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 20))
+                                .padding(.top, 10)
+                            Spacer()
+                            Text("\(summary == "" ? "{ AI WISDOM }" : "\(summary)")")
+                                .foregroundColor(Color.white)
+                                .font(.custom("SpaceMono-Regular", size: 16))
+                                .padding(.bottom, 15)
+                                .padding(.horizontal)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 20)
                     .padding(.top)
+                    .padding(.bottom, 20)
                 }
                 .ignoresSafeArea(edges: .all)
                 .frame(maxWidth: .infinity)
-                .padding(.bottom, 30)
             }
             .padding(.top, 15)
             .frame(maxWidth: .infinity)
