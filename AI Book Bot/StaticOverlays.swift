@@ -1,11 +1,13 @@
 import SwiftUI
 
 struct Header: View {
+    @Binding var overlayOn: Bool
     var body: some View {
         ZStack{
             HStack {
                 Button(action: {
                     print("Pressed navbar button")
+                    overlayOn = true
                 }) {
                     Image(systemName: "line.3.horizontal")
                         .resizable()

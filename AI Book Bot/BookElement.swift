@@ -29,10 +29,10 @@ struct Contributor: Decodable {
     let name: String
 }
 
-struct TitleSearchResult: Decodable {
-    let docs: [BookDoc]
-}
-
 struct BookDoc: Decodable {
     let isbn: [String]?
+}
+
+struct TitleSearchResult: Decodable {
+    let docs: [BookDoc]
 }

@@ -6,29 +6,35 @@ struct BookService {
             let searchURL = "https://openlibrary.org/search.json?title=\(isbn.replacingOccurrences(of: " ", with: "+"))"
             
             guard let url = URL(string: searchURL) else {
-                print("Invalid search URL")
+                print("This url does not work")
                 callback(nil)
                 return
             }
             
             URLSession.shared.dataTask(with: url) { data, _, error in
                 guard let data = data, error == nil else {
-                    print("Error fetching ISBN: \(error?.localizedDescription ?? "Unknown error")")
+                    print("Error getting the ISBN: \(error?.localizedDescription ?? "Unknown error happened")")
                     callback(nil)
                     return
                 }
                 
                 do {
                     let decodedData = try JSONDecoder().decode(TitleSearchResult.self, from: data)
-                    if let firstDoc = decodedData.docs.first, let firstISBN = firstDoc.isbn?.first {
-                        print("First ISBN: \(firstISBN)")
-                        self.fetchBookDetails(isbn: firstISBN, callback: callback)
+                    if let firstDoc = decodedData.docs.first, let isbnList = firstDoc.isbn, isbnList.count > 2 {
+                        let thirdISBN = isbnList[2]
+                        print("UTILIZING ISBN(3): \(thirdISBN)")
+                        self.fetchBookDetails(isbn: thirdISBN, callback: callback)
                     } else {
-                        print("No ISBN found for title: \(isbn)")
-                        callback(nil)
+                        if let firstDoc = decodedData.docs.first, let firstISBN = firstDoc.isbn?.first {
+                            print("UTILIZING ISBN(1): \(firstISBN)")
+                            self.fetchBookDetails(isbn: firstISBN, callback: callback)
+                        }else {
+                            print("No ISBN found for title: \(isbn)")
+                            callback(nil)
+                        }
                     }
                 } catch {
-                    print("Error decoding search JSON: \(error)")
+                    print("Error decoding JSON: \(error)")
                     callback(nil)
                 }
             }.resume()
@@ -42,14 +48,14 @@ struct BookService {
         let detailsURL = "https://openlibrary.org/api/books?bibkeys=ISBN:\(isbn)&jscmd=details&format=json"
         
         guard let url = URL(string: detailsURL) else {
-            print("Invalid book details URL")
+            print("Invalid URL")
             callback(nil)
             return
         }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
-                print("Error fetching book details: \(error?.localizedDescription ?? "Unknown error")")
+                print("Error getting book details: \(error?.localizedDescription ?? "Unknown error happened")")
                 callback(nil)
                 return
             }
@@ -59,11 +65,11 @@ struct BookService {
                 if let bookWrapper = decodedData["ISBN:\(isbn)"] {
                     callback(bookWrapper.details)
                 } else {
-                    print("No book details found for ISBN: \(isbn)")
+                    print("No book details for ISBN: \(isbn)")
                     callback(nil)
                 }
             } catch {
-                print("Error decoding book details JSON: \(error)")
+                print("Error decoding JSON: \(error)")
                 callback(nil)
             }
         }.resume()

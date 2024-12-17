@@ -29,6 +29,8 @@ struct ContentView: View {
     @State var currentCat: String = "SEARCH"
     @State var currentIndex: Int = 0
     
+    @State private var overlayOn = false
+    
     init() {
         guard let apiKey = Bundle.main.object(
             forInfoDictionaryKey: "API_KEY"
@@ -39,30 +41,62 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack(spacing:0) {
-            Header()
-            
-            Search(ISBNentry: $ISBNentry, isLoading: $isLoading, currentCat: $currentCat) {_ in
-                fetchISBN(for: 0)
+        
+        ZStack{
+            VStack(spacing:0) {
+                Header(overlayOn: $overlayOn)
+                
+                Search(ISBNentry: $ISBNentry, isLoading: $isLoading, currentCat: $currentCat) {_ in
+                    fetchISBN(for: 0)
+                }
+                
+                Navbar(currentCat: $currentCat, currentIndex: $currentIndex, categories: categories)
+                
+                BodySection(
+                    currentCat: $currentCat,
+                    currentIndex: $currentIndex,
+                    categories: categories,
+                    titleArray: titleArray,
+                    isbnArray: isbnArray,
+                    pagesArray: pagesArray,
+                    authorsArray: authorsArray,
+                    summaryArray: summaryArray
+                ) {_ in
+                    fetchISBN(for: currentIndex)
+                }
             }
+            .background(mainColor)
+            .ignoresSafeArea(edges: .bottom)
             
-            Navbar(currentCat: $currentCat, currentIndex: $currentIndex, categories: categories)
-            
-            BodySection(
-                currentCat: $currentCat,
-                currentIndex: $currentIndex,
-                categories: categories,
-                titleArray: titleArray,
-                isbnArray: isbnArray,
-                pagesArray: pagesArray,
-                authorsArray: authorsArray,
-                summaryArray: summaryArray
-            ) {_ in 
-                fetchISBN(for: currentIndex)
+            if overlayOn {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            overlayOn = false
+                        }
+                    
+                    VStack {
+                        Text("Settings")
+                            .font(.custom("SpaceMono-Regular", size:30))
+                            .foregroundColor(Color.white)
+                            .padding()
+                        Text("Testig my overlay")
+                            .padding()
+                        Button(action: {
+                            overlayOn = false
+                        }) {
+                            Text("Close")
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .frame(width: .infinity, height: .infinity)
+                    .background(mainColor)
+                    .shadow(radius: 10)
+                }
+                .zIndex(1)
             }
         }
-        .background(mainColor)
-        .ignoresSafeArea(edges: .bottom)
     }
     
     func fetchISBN(for index: Int) {
@@ -74,7 +108,7 @@ struct ContentView: View {
             AIcontroller.sendNewMessage(content: suggestion) { reply in
                 DispatchQueue.main.async {
                     recommendedISBN = reply ?? "0"
-                    print(recommendedISBN)
+                    print("BOOK TITLE: \(recommendedISBN)")
                     ISBNprompt = recommendedISBN
                     fetchBook(for: index)
                 }
