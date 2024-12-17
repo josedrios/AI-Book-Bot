@@ -45,4 +45,4 @@ EXAMPLE: API_KEY = YOUR_KEY_WITH_NO_QUOTATION_MARKS
 4. Click the "+" to create a new entry, and for key put "API_KEY" and for value put "$(API_KEY)"
 5. Then go to app project and go to its info tab, then drop down both debug and release tabs
 6. For both targets in debug and release select 'config'
-7. You can now utilize the project
+7. You can now utilize the project. After I ran into the issue where my Xcode's content view preview function became glitchy, I only found the app to be runnable on the external simulator (not on the built in preview in Xcode's code editor) and I ran it on the iPhone 16 Pro model which is what worked for me. I would guess this issue is only specific to me considering it has to do with some issue within my machine but if you run into this issue as well please contact me (to help me identify/fix the issue).
