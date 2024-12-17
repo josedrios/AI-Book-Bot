@@ -79,34 +79,72 @@ struct Search: View {
 
 struct Navbar: View {
     @Binding var currentCat: String
+    @Binding var currentIndex: Int
     let categories: [String]
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 15) {
-                ForEach(categories, id: \.self) { category in
-                    Button(action: {
-                        currentCat = category
-                        print("'\(category)' category was clicked")
-                    }) {
-                        Text(category)
-                            .font(.custom("SpaceMono-Regular", size: 18))
-                            .foregroundColor(currentCat == category ? Color.white : Color.white.opacity(0.4))
+        ScrollViewReader{ proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 15) {
+                    ForEach(categories, id: \.self) { category in
+                        Button(action: {
+                            currentCat = category
+                            updateIndex(category: category)
+                            print("'\(category)' category was clicked")
+                        }) {
+                            Text(category)
+                                .font(.custom("SpaceMono-Regular", size: 18))
+                                .foregroundColor(currentCat == category ? Color.white : Color.white.opacity(0.4))
+                        }
+                        .frame(height: 50)
+                        .overlay(
+                            Rectangle()
+                                .fill(currentCat == category ? Color.white : Color.white.opacity(0.4))
+                                .frame(height: 3)
+                                .padding(.top, 50),
+                            alignment: Alignment.bottom
+                        )
+                        .buttonStyle(PlainButtonStyle())
+                        .disabled(currentCat == category)
                     }
-                    .frame(height: 50)
-                    .overlay(
-                        Rectangle()
-                            .fill(currentCat == category ? Color.white : Color.white.opacity(0.4))
-                            .frame(height: 3)
-                            .padding(.top, 50),
-                        alignment: Alignment.bottom
-                    )
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(currentCat == category)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 0)
+            .onChange(of: currentCat) {
+                withAnimation {
+                    proxy.scrollTo(currentCat, anchor: .center)
                 }
             }
         }
-        .padding(.horizontal)
-        .padding(.bottom, 0)
+    }
+    
+    func updateIndex(category: String){
+        switch category {
+        case "SEARCH":
+            currentIndex = 0
+        case "FICTION":
+            currentIndex = 1
+        case "NON-FICTION":
+            currentIndex = 2
+        case "BIOGRAPHY":
+            currentIndex = 3
+        case "SCIENCE":
+            currentIndex = 4
+        case "HISTORY":
+            currentIndex = 5
+        case "FANTASY":
+            currentIndex = 6
+        case "MYSTERY":
+            currentIndex = 7
+        case "ROMANCE":
+            currentIndex = 8
+        case "THRILLER":
+            currentIndex = 9
+        case "SELF-HELP":
+            currentIndex = 10
+        default:
+            currentIndex = 0
+        }
     }
 }

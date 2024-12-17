@@ -2,29 +2,46 @@ import SwiftUI
 
 struct BookInfo: View {
     let category: String
-    let title: String
-    let isbn: String
-    let pages: Int
-    let authors: [String]
-    let summary: String
+    @Binding var currentIndex: Int
+    let titleArray: [String]
+    let isbnArray: [String]
+    let pagesArray: [Int]
+    let authorsArray: [String]
+    let summaryArray: [String]
     
     var body: some View {
         ScrollView{
+            if category != "SEARCH" {
+                VStack{
+                    Button(action: {
+                        print("Generating new \(category) suggestion")
+                    }){
+                        Text("Generate Suggestion")
+                            .font(.custom("SpaceMono-Regular", size: 20))
+                            .padding(.vertical, 8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(Color.black)
+                    .background(Color.white)
+                    .cornerRadius(6)
+                }
+                .padding(.horizontal, 20)
+            }
             VStack(spacing: 0) {
                 VStack(alignment: .center, spacing: 0) {
-                    Text("\(title.isEmpty ? "{ TITLE }" : title)")
+                    Text("\(titleArray[currentIndex].isEmpty ? "{ TITLE }" : titleArray[currentIndex])")
                         .foregroundColor(Color.white)
                         .font(.custom("SpaceMono-Regular", size: 30))
                         .padding(.horizontal, 10)
                         .padding(.bottom, 10)
                         .padding(.top, 0)
                         .multilineTextAlignment(.center)
-                    Text("By: \(authors.isEmpty ? "{ HUMAN }" : authors.joined(separator: ", "))")
+                    Text("By: \(authorsArray[currentIndex].isEmpty ? "{ HUMAN }" : authorsArray[currentIndex])")
                         .foregroundColor(Color.gray)
                         .font(.custom("SpaceMono-Regular", size: 18))
                         .multilineTextAlignment(.center)
-                    if !isbn.isEmpty {
-                        AsyncImage(url: URL(string: "https://covers.openlibrary.org/b/isbn/\(isbn)-M.jpg")) { phase in
+                    if !isbnArray[currentIndex].isEmpty {
+                        AsyncImage(url: URL(string: "https://covers.openlibrary.org/b/isbn/\(isbnArray[currentIndex])-M.jpg")) { phase in
                             switch phase {
                             case .empty:
                                 ProgressView()
@@ -51,14 +68,14 @@ struct BookInfo: View {
                                 .padding(.leading)
                                 .padding(.vertical, 10)
                             Spacer()
-                            Text("\(isbn.isEmpty ? "{ ID }" : isbn)")
+                            Text("\(isbnArray[currentIndex].isEmpty ? "{ ID }" : isbnArray[currentIndex])")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size: 20))
                                 .padding(.trailing)
                         }
                         .frame(maxWidth: .infinity)
                         .background(Color.gray.opacity(0.3))
-                        .cornerRadius(8)
+                        .cornerRadius(6)
                         
                         HStack {
                             Text("Pages: ")
@@ -67,14 +84,14 @@ struct BookInfo: View {
                                 .padding(.leading)
                                 .padding(.vertical, 10)
                             Spacer()
-                            Text("\(pages == 0 ? "{ NUMBER }" : "\(pages)")")
+                            Text("\(pagesArray[currentIndex] == 0 ? "{ NUMBER }" : "\(pagesArray[currentIndex])")")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size: 20))
                                 .padding(.trailing)
                         }
                         .frame(maxWidth: .infinity)
                         .background(Color.gray.opacity(0.3))
-                        .cornerRadius(8)
+                        .cornerRadius(6)
                         
                         VStack {
                             Text("AI Summary")
@@ -82,7 +99,7 @@ struct BookInfo: View {
                                 .font(.custom("SpaceMono-Regular", size: 20))
                                 .padding(.top, 10)
                             Spacer()
-                            Text("\(summary == "" ? "{ AI WISDOM }" : "\(summary)")")
+                            Text("\(summaryArray[currentIndex] == "" ? "{ AI WISDOM }" : "\(summaryArray[currentIndex])")")
                                 .foregroundColor(Color.white)
                                 .font(.custom("SpaceMono-Regular", size: 16))
                                 .padding(.bottom, 15)
@@ -90,7 +107,7 @@ struct BookInfo: View {
                         }
                         .frame(maxWidth: .infinity)
                         .background(Color.gray.opacity(0.3))
-                        .cornerRadius(8)
+                        .cornerRadius(6)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 20)
@@ -104,7 +121,6 @@ struct BookInfo: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.leading)
             .cornerRadius(5)
-            
         }
         .ignoresSafeArea(edges: .bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
