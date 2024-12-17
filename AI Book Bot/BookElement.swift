@@ -28,3 +28,11 @@ struct Contributor: Decodable {
     let role: String
     let name: String
 }
+
+struct TitleSearchResult: Decodable {
+    let docs: [BookDoc]
+}
+
+struct BookDoc: Decodable {
+    let isbn: [String]?
+}

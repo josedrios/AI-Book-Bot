@@ -38,7 +38,7 @@ struct Search: View {
     @Binding var ISBNentry: String
     @Binding var isLoading: Bool
     @Binding var currentCat: String
-    var fetchBook: (Int) -> Void
+    var fetchISBN: (Int) -> Void
 
     var body: some View {
         HStack {
@@ -62,7 +62,7 @@ struct Search: View {
             Button(action: {
                 isLoading = true
                 currentCat = "SEARCH"
-                fetchBook(0)
+                fetchISBN(0)
             }) {
                 Image(systemName: "magnifyingglass")
                     .font(.title)

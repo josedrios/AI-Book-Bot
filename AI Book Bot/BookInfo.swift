@@ -8,7 +8,7 @@ struct BookInfo: View {
     let pagesArray: [Int]
     let authorsArray: [String]
     let summaryArray: [String]
-    var fetchBook: (Int) -> Void
+    var fetchISBN: (Int) -> Void
     
     var body: some View {
         ScrollView{
@@ -16,7 +16,7 @@ struct BookInfo: View {
                 VStack{
                     Button(action: {
                         print("Generating new \(category) suggestion")
-                        fetchBook(currentIndex)
+                        fetchISBN(currentIndex)
                     }){
                         Text("Generate Suggestion")
                             .font(.custom("SpaceMono-Regular", size: 20))
@@ -42,25 +42,6 @@ struct BookInfo: View {
                         .foregroundColor(Color.gray)
                         .font(.custom("SpaceMono-Regular", size: 18))
                         .multilineTextAlignment(.center)
-                    if !isbnArray[currentIndex].isEmpty {
-                        AsyncImage(url: URL(string: "https://covers.openlibrary.org/b/isbn/\(isbnArray[currentIndex])-M.jpg")) { phase in
-                            switch phase {
-                            case .empty:
-                                ProgressView()
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                            case .failure:
-                                Text("Image not available")
-                                    .foregroundColor(.gray)
-                            @unknown default:
-                                EmptyView()
-                            }
-                        }
-                        .frame(height: 205)
-                        .padding(.vertical, 20)
-                    }
                     
                     VStack(alignment: .leading, spacing: 15) {
                         HStack {

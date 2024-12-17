@@ -9,7 +9,7 @@ struct BodySection: View {
     let pagesArray: [Int]
     let authorsArray: [String]
     let summaryArray: [String]
-    var fetchBook: (Int) -> Void
+    var fetchISBN: (Int) -> Void
 
     var body: some View {
         TabView(selection: $currentCat){
@@ -23,7 +23,7 @@ struct BodySection: View {
                         authorsArray: authorsArray,
                         summaryArray: summaryArray
                     ){_ in
-                        fetchBook(currentIndex)
+                        fetchISBN(currentIndex)
                     }
                 }
                 .padding(0)

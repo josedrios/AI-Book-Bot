@@ -15,7 +15,7 @@ struct ContentView: View {
     let service = BookService()
     @StateObject var AIcontroller: AIController
     
-    @State var ISBNentry: String = "9781590302484"
+    @State var ISBNentry: String = "0316017922"
     @State var titleArray = Array(repeating: "", count: 11)
     @State var isbnArray = Array(repeating: "", count: 11)
     @State var pagesArray = Array(repeating: 0, count: 11)
@@ -43,7 +43,7 @@ struct ContentView: View {
             Header()
             
             Search(ISBNentry: $ISBNentry, isLoading: $isLoading, currentCat: $currentCat) {_ in
-                fetchBook(for: 0)
+                fetchISBN(for: 0)
             }
             
             Navbar(currentCat: $currentCat, currentIndex: $currentIndex, categories: categories)
@@ -58,45 +58,50 @@ struct ContentView: View {
                 authorsArray: authorsArray,
                 summaryArray: summaryArray
             ) {_ in 
-                fetchBook(for: currentIndex)
+                fetchISBN(for: currentIndex)
             }
         }
         .background(mainColor)
         .ignoresSafeArea(edges: .bottom)
     }
     
-    func fetchBook(for index: Int) {
+    func fetchISBN(for index: Int) {
         if index == 0 {
             ISBNprompt = ISBNentry
+            fetchBook(for: index)
         }else{
-            let suggestion = "Only give me an ISBN on the topic of \(categories[index]), nothing else, make sure its a well known book"
+            let suggestion = "Only provide a valid, popular book title in the category \(categories[index]) in english. The book must be recognizable and widely published. Do not provide any other text or description or author detail, just the title."
             AIcontroller.sendNewMessage(content: suggestion) { reply in
                 DispatchQueue.main.async {
                     recommendedISBN = reply ?? "0"
                     print(recommendedISBN)
                     ISBNprompt = recommendedISBN
+                    fetchBook(for: index)
                 }
             }
         }
-        service.fetchLines(isbn: ISBNprompt) { fetchedBook in
+    }
+    
+    func fetchBook(for index: Int) {
+        service.fetchLines(isbn: ISBNprompt, decider: index) { fetchedBook in
             DispatchQueue.main.async {
                 if let book = fetchedBook {
-                        titleArray[index] = book.title
-                        isbnArray[index] = ISBNentry
-                        pagesArray[index] = book.numPages ?? 0
-                        authorsArray[index] = book.authors?.first?.name
-                            ?? book.contributors?.first?.name
-                            ?? "{ HUMAN }"
-                        prompt = "Give me a concise summary of the book \(titleArray[index])"
-                        
-                        AIcontroller.sendNewMessage(content: prompt) { reply in
-                            summaryArray[index] = "..."
-                            DispatchQueue.main.async {
-                                summaryArray[index] = reply ?? "No summary available"
-                            }
+                    titleArray[index] = book.title
+                    isbnArray[index] = ISBNentry
+                    pagesArray[index] = book.numPages ?? 0
+                    authorsArray[index] = book.authors?.first?.name
+                    ?? book.contributors?.first?.name
+                    ?? "{ HUMAN }"
+                    prompt = "Give me a concise summary of the book \(titleArray[index])"
+                    
+                    AIcontroller.sendNewMessage(content: prompt) { reply in
+                        summaryArray[index] = "..."
+                        DispatchQueue.main.async {
+                            summaryArray[index] = reply ?? "No summary available"
                         }
+                    }
                 } else {
-                    titleArray[index] = "{ NO RESULT FOUND }"
+                    titleArray[index] = "{ NO RESULT, TRY AGAIN }"
                     isbnArray[index] = "{ \(ISBNprompt) }"
                     pagesArray[index] = 404
                     authorsArray[index] = "{ TRY ANOTHER ISBN }"
